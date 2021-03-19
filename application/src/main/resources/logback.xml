@@ -1,0 +1,47 @@
+<configuration>
+    <appender name="LOCAL" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%highlight(%d{HH:mm:ss} %level %logger{0}) - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="DEV_PROD" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp>
+                    <fieldName>timestamp</fieldName>
+                    <timeZone>America/Sao_Paulo</timeZone>
+                    <pattern>yyyy-MM-dd'T'HH:mm:ss.SSSZZ</pattern>
+                </timestamp>
+
+                <logLevel>
+                    <fieldName>level</fieldName>
+                </logLevel>
+
+                <message>
+                    <fieldName>message</fieldName>
+                </message>
+
+                <context/>
+                <mdc/>
+
+                <loggerName>
+                    <fieldName>logger</fieldName>
+                </loggerName>
+
+                <stackTrace>
+                    <fieldName>stackTrace</fieldName>
+                </stackTrace>
+
+                <pattern>
+                    <omitEmptyFields>true</omitEmptyFields>
+                    <pattern/>
+                </pattern>
+            </providers>
+        </encoder>
+    </appender>
+
+    <root level="${LOG_LEVEL:-INFO}">
+        <appender-ref ref="${LOG_ENCODER:-LOCAL}"/>
+    </root>
+</configuration>

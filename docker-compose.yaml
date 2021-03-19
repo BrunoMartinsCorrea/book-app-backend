@@ -1,0 +1,18 @@
+version: "3.9"
+
+services:
+  database:
+    container_name: book-app-database
+    image: postgres:alpine
+    environment:
+      POSTGRES_PASSWORD: root
+      POSTGRES_USER: root
+      POSTGRES_DB: book-app
+    network_mode: host
+  api:
+    container_name: book-app-api
+    build: .
+    restart: on-failure
+    depends_on:
+      - database
+    network_mode: host
