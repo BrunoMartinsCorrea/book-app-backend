@@ -1,0 +1,21 @@
+name: DOCKER-BUILD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: BUILD
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: CHECKOUT
+        uses: actions/checkout@v3
+
+      - name: DOCKER-BUILD
+        run: docker build .

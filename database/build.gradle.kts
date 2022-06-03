@@ -1,8 +1,8 @@
-val exposedVersion = findProperty("exposed.version")
-val flywayVersion = findProperty("flyway.version")
-val hikariVersion = findProperty("hikari.version")
-val kotlinVersion = findProperty("kotlin.version")
-val postgresqlVersion = findProperty("postgresql.version")
+val exposedVersion: String by project
+val flywayVersion: String by project
+val hikariVersion: String by project
+val kotlinVersion: String by project
+val postgresqlVersion: String by project
 
 plugins {
     val flywayPluginVersion = "7.6.0"

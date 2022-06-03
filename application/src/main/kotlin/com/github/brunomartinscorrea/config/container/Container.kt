@@ -3,10 +3,10 @@ package com.github.brunomartinscorrea.config.container
 import com.github.brunomartinscorrea.config.container.modules.databaseModules
 import com.github.brunomartinscorrea.config.container.modules.httpModules
 import com.github.brunomartinscorrea.config.container.modules.serviceModules
-import org.koin.Logger.slf4jLogger
 import org.koin.core.context.GlobalContext
 import org.koin.core.context.startKoin
 import org.koin.core.logger.Level.INFO
+import org.koin.logger.slf4jLogger
 
 object Container {
     fun start() = startKoin {
@@ -21,5 +21,5 @@ object Container {
         )
     }
 
-    inline fun <reified T> getInstanceOf() = GlobalContext.get().koin.get<T>()
+    inline fun <reified T> getInstanceOf() = GlobalContext.get().get<T>(T::class)
 }

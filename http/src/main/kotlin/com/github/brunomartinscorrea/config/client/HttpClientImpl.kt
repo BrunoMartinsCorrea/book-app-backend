@@ -3,14 +3,15 @@ package com.github.brunomartinscorrea.config.client
 import com.github.brunomartinscorrea.adapter.http.CircuitBreaker
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
-import io.ktor.client.features.HttpResponseValidator
-import io.ktor.client.features.json.JsonFeature
-import io.ktor.client.features.json.defaultSerializer
-import io.ktor.client.features.json.serializer.KotlinxSerializer
-import io.ktor.client.features.logging.LogLevel.INFO
-import io.ktor.client.features.logging.Logging
+import io.ktor.client.plugins.HttpResponseValidator
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.json.defaultSerializer
+import io.ktor.client.plugins.logging.LogLevel.INFO
+import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.post
+import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
+import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
 class HttpClientImpl(
@@ -20,7 +21,7 @@ class HttpClientImpl(
     override suspend fun <T : Any> post(endpoint: String, body: T) {
         circuitBreaker.apply {
             client.post(endpoint) {
-                this.body = json.write(body)
+                setBody(json.write(body))
             }
         }
     }
@@ -32,8 +33,8 @@ class HttpClientImpl(
                 level = INFO
             }
 
-            install(JsonFeature) {
-                serializer = KotlinxSerializer(
+            install(ContentNegotiation) {
+                json(
                     Json {
                         prettyPrint = true
                         isLenient = true

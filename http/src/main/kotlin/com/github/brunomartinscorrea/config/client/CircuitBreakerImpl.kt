@@ -9,7 +9,7 @@ import io.github.resilience4j.kotlin.retry.retry
 import io.github.resilience4j.retry.Retry
 import io.github.resilience4j.retry.RetryConfig
 import io.github.resilience4j.retry.RetryRegistry
-import io.ktor.client.features.ClientRequestException
+import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.statement.HttpResponse
 import java.time.Duration.ofMillis
 import kotlinx.coroutines.flow.catch

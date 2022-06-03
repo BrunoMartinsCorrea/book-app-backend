@@ -1,24 +1,16 @@
-val javaVersion = findProperty("java.version").toString().toInt()
-val kotestVersion = findProperty("kotest.version")
-val kotlinxCoroutineVersion = findProperty("kotlinx.coroutines.version")
-val ktlintVersion = findProperty("ktlint.version")
-val logbackVersion = findProperty("logback.version")
-val logstashEncoderVersion = findProperty("logstash.encoder.version")
-val mockkVersion = findProperty("mockk.version")
-val sonarqubeVersion = findProperty("sonarqube.version")
-
-java.sourceCompatibility = JavaVersion.toVersion(javaVersion)
-
-repositories {
-    mavenCentral()
-    jcenter()
-    google()
-}
+val javaVersion: String by project
+val kotestVersion: String by project
+val kotlinxCoroutinesVersion: String by project
+val logbackVersion: String by project
+val mockkVersion: String by project
 
 plugins {
-    val kotlinPluginVersion = "1.4.31"
-    val ktlintPluginVersion = "10.0.0"
-    val sonarqubePluginVersion = "3.1.1"
+    // https://plugins.gradle.org/plugin/org.jetbrains.kotlin.jvm
+    val kotlinPluginVersion = "1.6.21"
+    // https://plugins.gradle.org/plugin/org.jlleitschuh.gradle.ktlint
+    val ktlintPluginVersion = "10.3.0"
+    // https://plugins.gradle.org/plugin/org.sonarqube
+    val sonarqubePluginVersion = "3.3"
 
     kotlin("jvm") version kotlinPluginVersion
     jacoco
@@ -26,53 +18,41 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version ktlintPluginVersion
 }
 
-configurations {
-    ktlint
-}
-
-subprojects {
-    group = "com.company"
-    version = "1.0"
-
-    apply(plugin = "kotlin")
-    apply(plugin = "jacoco")
-    apply(plugin = "org.sonarqube")
-    apply(plugin = "org.jlleitschuh.gradle.ktlint")
-
-    sourceSets {
-        getByName("main").java.srcDirs("src/main/kotlin")
-    }
-
-    configurations {
-        ktlint
-    }
-
+allprojects {
     repositories {
+        mavenLocal()
         mavenCentral()
-        jcenter()
         google()
+    }
+
+    apply {
+        plugin("kotlin")
+        plugin("jacoco")
+        plugin("org.sonarqube")
+        plugin("org.jlleitschuh.gradle.ktlint")
     }
 
     dependencies {
         implementation("ch.qos.logback:logback-classic:$logbackVersion")
-        implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
-        implementation("com.pinterest.ktlint:ktlint-core:$ktlintVersion")
-        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxCoroutineVersion")
-        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$kotlinxCoroutineVersion")
-        implementation("org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:$sonarqubeVersion")
+        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxCoroutinesVersion")
+        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:$kotlinxCoroutinesVersion")
+        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$kotlinxCoroutinesVersion")
 
         testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
         testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
         testImplementation("io.mockk:mockk:$mockkVersion")
-        testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinxCoroutineVersion")
+        testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinxCoroutinesVersion")
     }
 
+    group = "com.company"
+    version = "1.0"
+
+    java.sourceCompatibility = JavaVersion.toVersion(javaVersion)
+    java.targetCompatibility = JavaVersion.toVersion(javaVersion)
+
     sourceSets {
-        main {
-            java {
-                srcDir("src/main/kotlin")
-            }
-        }
+        main { java.srcDirs(listOf("src/main/kotlin")) }
+        test { java.srcDirs(listOf("src/test/kotlin")) }
     }
 
     configurations {
@@ -80,9 +60,15 @@ subprojects {
     }
 
     ktlint {
+        additionalEditorconfigFile.set(projectDir.resolve(".editorconfig"))
+        android.set(false)
         debug.set(false)
-        outputToConsole.set(true)
+        disabledRules.set(setOf())
+        enableExperimentalRules.set(false)
         ignoreFailures.set(false)
+        outputColorName.set("RED")
+        outputToConsole.set(true)
+        verbose.set(true)
 
         filter {
             exclude("**/generated/**")
@@ -101,22 +87,29 @@ subprojects {
         }
     }
 
+    reporting {
+        baseDir = layout.buildDirectory.dir("report").get().asFile
+    }
+
     tasks {
-        build {
-            finalizedBy(jacocoTestCoverageVerification)
-        }
+        val compilerArgs = listOf(
+            "-Xjsr305=strict",
+            "-Xjvm-default=all",
+        )
+        val outputDir = "${project.buildDir}/reports/ktlint/"
+        val inputFiles = project.fileTree(mapOf("dir" to "src", "include" to "**/kotlin/**/*.kt"))
 
         compileKotlin {
             kotlinOptions {
-                freeCompilerArgs = listOf("-Xjvm-default=enable")
+                freeCompilerArgs = compilerArgs
                 allWarningsAsErrors = true
-                jvmTarget = "$javaVersion"
+                jvmTarget = javaVersion
             }
         }
 
         compileTestKotlin {
             kotlinOptions {
-                jvmTarget = "$javaVersion"
+                jvmTarget = javaVersion
             }
         }
 
@@ -140,6 +133,8 @@ subprojects {
             dependsOn(jacocoTestReport)
 
             violationRules {
+                enabled = false
+
                 rule {
                     element = "CLASS"
 
@@ -162,8 +157,9 @@ subprojects {
             }
         }
 
-        val outputDir = "${project.buildDir}/reports/ktlint/"
-        val inputFiles = project.fileTree(mapOf("dir" to "src", "include" to "**/kotlin/**/*.kt"))
+        build {
+            finalizedBy(jacocoTestCoverageVerification)
+        }
 
         ktlintCheck {
             inputs.files(inputFiles)

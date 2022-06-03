@@ -1,17 +1,17 @@
 <configuration>
-    <appender name="LOCAL" class="ch.qos.logback.core.ConsoleAppender">
+    <appender name="PLAIN_TEXT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%highlight(%d{HH:mm:ss} %level %logger{0}) - %msg%n</pattern>
+            <pattern>%highlight(%d{yyyy-MM-dd'T'HH:mm:ssZ,UTC} %level %logger{0}) - %msg%replace( [%mdc]){' \[\]', ''}%n</pattern>
         </encoder>
     </appender>
 
-    <appender name="DEV_PROD" class="ch.qos.logback.core.ConsoleAppender">
+    <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
             <providers>
                 <timestamp>
                     <fieldName>timestamp</fieldName>
-                    <timeZone>America/Sao_Paulo</timeZone>
-                    <pattern>yyyy-MM-dd'T'HH:mm:ss.SSSZZ</pattern>
+                    <timeZone>UTC</timeZone>
+                    <pattern>yyyy-MM-dd'T'HH:mm:ssZ</pattern>
                 </timestamp>
 
                 <logLevel>
@@ -41,7 +41,9 @@
         </encoder>
     </appender>
 
+    <logger name="com.github.brunomartinscorrea" level="${LOG_LEVEL:-DEBUG}"/>
+
     <root level="${LOG_LEVEL:-INFO}">
-        <appender-ref ref="${LOG_ENCODER:-LOCAL}"/>
+        <appender-ref ref="${LOG_FORMAT:-PLAIN_TEXT}"/>
     </root>
 </configuration>

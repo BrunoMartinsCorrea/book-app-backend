@@ -6,19 +6,18 @@ import com.github.brunomartinscorrea.config.shared.HttpClientExtension.setContro
 import com.github.brunomartinscorrea.exception.http.HttpException
 import com.github.brunomartinscorrea.health.HealthDto
 import com.github.brunomartinscorrea.user.UserDto
-import io.ktor.application.call
-import io.ktor.application.install
-import io.ktor.features.CallLogging
-import io.ktor.features.ContentNegotiation
-import io.ktor.features.StatusPages
 import io.ktor.http.HttpStatusCode.Companion.InternalServerError
 import io.ktor.http.HttpStatusCode.Companion.fromValue
-import io.ktor.response.respondText
-import io.ktor.routing.route
-import io.ktor.routing.routing
-import io.ktor.serialization.json
+import io.ktor.serialization.kotlinx.json.json
+import io.ktor.server.application.install
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import io.ktor.server.plugins.callloging.CallLogging
+import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.plugins.statuspages.StatusPages
+import io.ktor.server.response.respondText
+import io.ktor.server.routing.route
+import io.ktor.server.routing.routing
 import kotlinx.serialization.json.Json
 import org.slf4j.event.Level.INFO
 
@@ -47,17 +46,17 @@ class HttpServerImpl(
             install(StatusPages) {
                 val defaultMessageError = "Something went wrong!"
 
-                exception<Exception> {
+                exception<Exception> { call, cause ->
                     call.respondText(
                         status = InternalServerError,
-                        text = it.message ?: defaultMessageError
+                        text = cause.message ?: defaultMessageError
                     )
                 }
 
-                exception<HttpException> {
+                exception<HttpException> { call, cause ->
                     call.respondText(
-                        status = fromValue(it.statusCode),
-                        text = it.message ?: defaultMessageError
+                        status = fromValue(cause.statusCode),
+                        text = cause.message ?: defaultMessageError
                     )
                 }
             }
@@ -69,6 +68,6 @@ class HttpServerImpl(
                     setControllerRoute(controller = userController, resourcePath = "/user", getPath = "{id}")
                 }
             }
-        }.start()
+        }.start(wait = true)
     }
 }

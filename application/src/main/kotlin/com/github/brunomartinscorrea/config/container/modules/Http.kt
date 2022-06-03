@@ -1,6 +1,7 @@
 package com.github.brunomartinscorrea.config.container.modules
 
 import com.github.brunomartinscorrea.adapter.http.CircuitBreaker
+import com.github.brunomartinscorrea.adapter.http.Controller
 import com.github.brunomartinscorrea.adapter.http.HttpClient
 import com.github.brunomartinscorrea.adapter.http.HttpServer
 import com.github.brunomartinscorrea.config.client.CircuitBreakerImpl
@@ -21,8 +22,10 @@ import com.github.brunomartinscorrea.config.environment.module.httpServerContext
 import com.github.brunomartinscorrea.config.environment.module.httpServerPort
 import com.github.brunomartinscorrea.config.server.HttpServerImpl
 import com.github.brunomartinscorrea.health.HealthControllerImpl
+import com.github.brunomartinscorrea.health.HealthDto
 import com.github.brunomartinscorrea.root.RootControllerImpl
 import com.github.brunomartinscorrea.user.UserControllerImpl
+import com.github.brunomartinscorrea.user.UserDto
 import java.io.IOException
 import java.net.ConnectException
 import java.util.concurrent.TimeoutException
@@ -30,9 +33,9 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 val httpModules = module {
-    single(named("rootController")) { RootControllerImpl() }
-    single(named("healthController")) { HealthControllerImpl() }
-    single(named("userController")) { UserControllerImpl(get()) }
+    single<Controller<String>>(named("rootController")) { RootControllerImpl() }
+    single<Controller<HealthDto>>(named("healthController")) { HealthControllerImpl() }
+    single<Controller<UserDto>>(named("userController")) { UserControllerImpl(get()) }
 
     single<HttpServer> {
         HttpServerImpl(

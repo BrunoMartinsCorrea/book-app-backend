@@ -1,6 +1,8 @@
-val configVersion = findProperty("config.version")
-val koinVersion = findProperty("koin.version")
-val kotestVersion = findProperty("kotest.version")
+val configVersion: String by project
+val koinVersion: String by project
+val kotestVersion: String by project
+val kotestKoinVersion: String by project
+val logstashEncoderVersion: String by project
 
 plugins {
     application
@@ -23,18 +25,21 @@ dependencies {
     implementation(project(":http"))
     implementation(project(":service"))
 
+    implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
     implementation("com.typesafe:config:$configVersion")
-    implementation("org.koin:koin-core:$koinVersion")
-    implementation("org.koin:koin-logger-slf4j:$koinVersion")
+    implementation("io.insert-koin:koin-core:$koinVersion")
+    implementation("io.insert-koin:koin-logger-slf4j:$koinVersion")
 
-    testImplementation("org.koin:koin-test:$koinVersion")
-    testImplementation("io.kotest:kotest-extensions-koin:$kotestVersion")
+    testImplementation("io.insert-koin:koin-test:$koinVersion")
+    testImplementation("io.kotest.extensions:kotest-extensions-koin:$kotestKoinVersion")
 }
 
 tasks {
     jar {
         archiveBaseName.set("app")
+        archiveAppendix.set("")
         archiveVersion.set("")
+        archiveClassifier.set("")
 
         manifest {
             attributes(mapOf("Main-Class" to application.mainClass))
